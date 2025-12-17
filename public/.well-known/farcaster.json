@@ -1,0 +1,32 @@
+{
+  "accountAssociation": {
+    "header": "",
+    "payload": "",
+    "signature": ""
+  },
+  "frame": {
+    "version": "1",
+    "name": "BasePad",
+    "subtitle": "Onchain bounties for Base builders",
+    "description": "Post bounties, hunt rewards, and get paid onchain via x402 on Base Sepolia.",
+    "iconUrl": "https://basepad.maazx.dev/basepad-icon-256.png",
+    "homeUrl": "https://basepad.maazx.dev/",
+    "splashImageUrl": "https://basepad.maazx.dev/basepad-icon-512.png",
+    "splashBackgroundColor": "#000000",
+    "heroImageUrl": "https://basepad.maazx.dev/basepad-icon-512.png",
+    "tagline": "The onchain bounty board for Base builders.",
+    "screenshotUrls": [
+      "https://basepad.maazx.dev/basepad-icon-1024.png"
+    ],
+    "primaryCategory": "productivity",
+    "tags": [
+      "bounties",
+      "onchain",
+      "base",
+      "x402"
+    ],
+    "webhookUrl": ""
+  }
+}
+
+
