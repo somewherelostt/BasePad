@@ -10,6 +10,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@farcaster/miniapp-sdk": "^0.2.1",
     "@google/generative-ai": "^0.24.1",
     "@privy-io/react-auth": "^3.9.0",
     "@solana-program/system": "^0.10.0",
