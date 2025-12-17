@@ -16,7 +16,7 @@ async function verifyX402Payment(
 ): Promise<{ valid: boolean; error?: string }> {
   try {
     // Import ethers for on-chain verification
-    const { JsonRpcProvider, Contract } = await import("ethers");
+    const { JsonRpcProvider } = await import("ethers");
     
     // Base Sepolia RPC
     const provider = new JsonRpcProvider("https://sepolia.base.org");

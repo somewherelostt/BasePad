@@ -5,7 +5,6 @@ import { Navbar } from "@/components/Navbar";
 import { BrutalCard } from "@/components/BrutalCard";
 import { BrutalButton } from "@/components/BrutalButton";
 import { WalletGate } from "@/components/WalletGate";
-import { TypewriterPlaceholder } from "@/components/TypewriterPlaceholder";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { baseSepolia } from "@/lib/base";
@@ -22,7 +21,6 @@ export default function CreatePage() {
 
   const [step, setStep] = useState<CreateStep>("FORM");
   const [error, setError] = useState<string>("");
-  const [walletReady, setWalletReady] = useState(false);
 
   // Form state
   const [title, setTitle] = useState("");
@@ -47,10 +45,8 @@ export default function CreatePage() {
       if (wallet) {
         try {
           await wallet.switchChain(baseSepolia.id);
-          setWalletReady(true);
         } catch (err) {
           console.log("Chain switch:", err);
-          setWalletReady(true);
         }
       }
     };

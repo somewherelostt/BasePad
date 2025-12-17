@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
-import BasePad3DScene from "@/components/BasePad3DScene";
 
 // Force dynamic rendering for all pages (Privy needs client-side)
 export const dynamic = "force-dynamic";

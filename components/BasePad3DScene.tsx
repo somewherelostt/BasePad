@@ -9,7 +9,7 @@ export default function BasePad3DScene() {
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const clusterRef = useRef<THREE.Group | null>(null);
-  const cubesRef = useRef<any[]>([]);
+  const cubesRef = useRef<Array<{ mesh: THREE.Mesh | THREE.LineSegments; originalPos: THREE.Vector3; distance: number }>>([]);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -100,7 +100,7 @@ export default function BasePad3DScene() {
     };
 
     // Build cluster
-    const cubes: any[] = [];
+    const cubes: Array<{ mesh: THREE.Mesh | THREE.LineSegments; originalPos: THREE.Vector3; distance: number }> = [];
 
     const coreCube = createSolidBox(6, 6, 6, neonGreenMaterial);
     coreCube.position.set(0, 0, 0);
@@ -245,7 +245,10 @@ export default function BasePad3DScene() {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('resize', handleResize);
       renderer.dispose();
-      containerRef.current?.removeChild(renderer.domElement);
+      const container = containerRef.current;
+      if (container && renderer.domElement.parentNode === container) {
+        container.removeChild(renderer.domElement);
+      }
     };
   }, []);
 

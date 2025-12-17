@@ -2,7 +2,6 @@
 
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { Navbar } from "@/components/Navbar";
-import { BrutalCard } from "@/components/BrutalCard";
 import { BrutalButton } from "@/components/BrutalButton";
 import Link from "next/link";
 import { useEffect, useState } from "react";

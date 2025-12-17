@@ -28,10 +28,10 @@ export default function Home() {
         const bounties = await response.json();
 
         const totalBounties = bounties.length;
-        const totalPrize = bounties.reduce((sum: string, b: any) => {
+        const totalPrize = bounties.reduce((sum: string, b: { prize?: string; status?: string }) => {
           return (parseFloat(sum) + parseFloat(b.prize || "0")).toString();
         }, "0");
-        const huntersPaid = bounties.filter((b: any) => b.status === "PAID").length;
+        const huntersPaid = bounties.filter((b: { status?: string }) => b.status === "PAID").length;
 
         setStats({
           totalBounties,

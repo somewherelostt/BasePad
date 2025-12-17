@@ -10,7 +10,7 @@ import { useEffect, useState } from "react";
 import { Bounty, Submission, db } from "@/lib/supabase";
 
 export default function ProfilePage() {
-  const { login, logout, authenticated, user } = usePrivy();
+  const { login, logout, authenticated } = usePrivy();
   const { wallets } = useWallets();
   const [myBounties, setMyBounties] = useState<Bounty[]>([]);
   const [mySubmissions, setMySubmissions] = useState<Submission[]>([]);
@@ -102,7 +102,7 @@ export default function ProfilePage() {
                 {myBounties.length === 0 ? (
                   <BrutalCard variant="default" padding="lg">
                     <p className="font-bold uppercase text-gray-600 mb-4">
-                      YOU HAVEN'T CREATED ANY BOUNTIES YET
+                      YOU HAVEN&apos;T CREATED ANY BOUNTIES YET
                     </p>
                     <Link href="/create">
                       <BrutalButton variant="primary" size="sm">
@@ -151,7 +151,7 @@ export default function ProfilePage() {
                 {mySubmissions.length === 0 ? (
                   <BrutalCard variant="default" padding="lg">
                     <p className="font-bold uppercase text-gray-600 mb-4">
-                      YOU HAVEN'T SUBMITTED TO ANY BOUNTIES YET
+                      YOU HAVEN&apos;T SUBMITTED TO ANY BOUNTIES YET
                     </p>
                     <Link href="/bounties">
                       <BrutalButton variant="primary" size="sm">

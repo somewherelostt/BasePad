@@ -5,7 +5,7 @@ import { Navbar } from "@/components/Navbar";
 import { BrutalCard } from "@/components/BrutalCard";
 import { BrutalButton } from "@/components/BrutalButton";
 import { WalletGate } from "@/components/WalletGate";
-import { SocialShare, SocialShareCompact } from "@/components/SocialShare";
+import { SocialShare } from "@/components/SocialShare";
 import { BrutalReceipt } from "@/components/BrutalReceipt";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
