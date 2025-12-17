@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
-import * as THREE from 'three';
+import { useEffect, useRef } from "react";
+import * as THREE from "three";
 
 export default function BasePad3DScene() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -9,10 +9,17 @@ export default function BasePad3DScene() {
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const clusterRef = useRef<THREE.Group | null>(null);
-  const cubesRef = useRef<Array<{ mesh: THREE.Mesh | THREE.LineSegments; originalPos: THREE.Vector3; distance: number }>>([]);
+  const cubesRef = useRef<
+    Array<{
+      mesh: THREE.Mesh | THREE.LineSegments;
+      originalPos: THREE.Vector3;
+      distance: number;
+    }>
+  >([]);
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    const container = containerRef.current;
+    if (!container) return;
 
     // Scene setup
     const scene = new THREE.Scene();
@@ -33,7 +40,7 @@ export default function BasePad3DScene() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.shadowMap.enabled = true;
-    containerRef.current.appendChild(renderer.domElement);
+    container.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
     // Lighting
@@ -91,7 +98,12 @@ export default function BasePad3DScene() {
       return new THREE.LineSegments(edges, wireframeMaterial);
     };
 
-    const createSolidBox = (width: number, height: number, depth: number, material: THREE.Material) => {
+    const createSolidBox = (
+      width: number,
+      height: number,
+      depth: number,
+      material: THREE.Material
+    ) => {
       const geometry = new THREE.BoxGeometry(width, height, depth);
       const mesh = new THREE.Mesh(geometry, material);
       mesh.castShadow = true;
@@ -100,12 +112,20 @@ export default function BasePad3DScene() {
     };
 
     // Build cluster
-    const cubes: Array<{ mesh: THREE.Mesh | THREE.LineSegments; originalPos: THREE.Vector3; distance: number }> = [];
+    const cubes: Array<{
+      mesh: THREE.Mesh | THREE.LineSegments;
+      originalPos: THREE.Vector3;
+      distance: number;
+    }> = [];
 
     const coreCube = createSolidBox(6, 6, 6, neonGreenMaterial);
     coreCube.position.set(0, 0, 0);
     cluster.add(coreCube);
-    cubes.push({ mesh: coreCube, originalPos: coreCube.position.clone(), distance: 0 });
+    cubes.push({
+      mesh: coreCube,
+      originalPos: coreCube.position.clone(),
+      distance: 0,
+    });
 
     const positions = [
       { pos: [10, 0, 0], size: 4 },
@@ -152,7 +172,10 @@ export default function BasePad3DScene() {
     // Pyramid
     const pyramidGeometry = new THREE.ConeGeometry(5, 8, 4);
     const pyramidEdges = new THREE.EdgesGeometry(pyramidGeometry);
-    const pyramidWireframe = new THREE.LineSegments(pyramidEdges, wireframeMaterial);
+    const pyramidWireframe = new THREE.LineSegments(
+      pyramidEdges,
+      wireframeMaterial
+    );
     pyramidWireframe.position.set(-12, 5, 12);
     cluster.add(pyramidWireframe);
 
@@ -179,8 +202,8 @@ export default function BasePad3DScene() {
       renderer.setSize(window.innerWidth, window.innerHeight);
     };
 
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('resize', handleResize);
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("resize", handleResize);
 
     // Animation loop
     const animate = () => {
@@ -242,16 +265,14 @@ export default function BasePad3DScene() {
     animate();
 
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("resize", handleResize);
       renderer.dispose();
-      const container = containerRef.current;
       if (container && renderer.domElement.parentNode === container) {
         container.removeChild(renderer.domElement);
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return <div ref={containerRef} style={{ width: '100%', height: '100vh' }} />;
+  return <div ref={containerRef} style={{ width: "100%", height: "100vh" }} />;
 }

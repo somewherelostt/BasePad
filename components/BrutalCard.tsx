@@ -1,7 +1,9 @@
-import { HTMLAttributes, forwardRef } from "react";
+import { forwardRef, type ComponentPropsWithoutRef } from "react";
 import { motion } from "framer-motion";
 
-interface BrutalCardProps extends HTMLAttributes<HTMLDivElement> {
+type MotionDivProps = ComponentPropsWithoutRef<typeof motion.div>;
+
+interface BrutalCardProps extends MotionDivProps {
   variant?: "default" | "green" | "pink" | "yellow" | "dark";
   padding?: "sm" | "md" | "lg";
   hover?: boolean;
