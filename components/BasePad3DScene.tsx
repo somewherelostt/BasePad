@@ -250,6 +250,7 @@ export default function BasePad3DScene() {
         container.removeChild(renderer.domElement);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return <div ref={containerRef} style={{ width: '100%', height: '100vh' }} />;

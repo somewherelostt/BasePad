@@ -1,5 +1,4 @@
 import { ButtonHTMLAttributes, forwardRef } from "react";
-import { motion } from "framer-motion";
 
 interface BrutalButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "danger" | "success";
@@ -66,7 +65,7 @@ export const BrutalButton = forwardRef<HTMLButtonElement, BrutalButtonProps>(
     const widthClass = fullWidth ? "w-full" : "";
 
     return (
-      <motion.button
+      <button
         ref={ref}
         className={`
           ${baseStyles}
@@ -76,12 +75,10 @@ export const BrutalButton = forwardRef<HTMLButtonElement, BrutalButtonProps>(
           ${className}
         `}
         disabled={disabled}
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98, x: 4, y: 4 }}
         {...props}
       >
         {children}
-      </motion.button>
+      </button>
     );
   }
 );
