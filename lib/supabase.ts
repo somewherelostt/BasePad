@@ -1,0 +1,150 @@
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
+
+// Supabase configuration - lazy initialization
+let _supabase: SupabaseClient | null = null;
+let _supabaseAdmin: SupabaseClient | null = null;
+
+// Public client (for client-side operations)
+export function getSupabase(): SupabaseClient {
+  if (!_supabase) {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+      throw new Error("Missing Supabase environment variables");
+    }
+
+    _supabase = createClient(supabaseUrl, supabaseAnonKey);
+  }
+  return _supabase;
+}
+
+// Admin client (for server-side operations with service role)
+export function getSupabaseAdmin(): SupabaseClient {
+  if (!_supabaseAdmin) {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error("Missing Supabase admin environment variables");
+    }
+
+    _supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+  }
+  return _supabaseAdmin;
+}
+
+// Legacy exports for compatibility
+export const supabase = {
+  get client() {
+    return getSupabase();
+  },
+  from: (table: string) => getSupabase().from(table),
+};
+
+export const supabaseAdmin = {
+  get client() {
+    return getSupabaseAdmin();
+  },
+  from: (table: string) => getSupabaseAdmin().from(table),
+};
+
+// Types for database tables
+export type BountyStatus = "OPEN" | "PAID";
+
+export interface Bounty {
+  id: string;
+  title: string;
+  description: string;
+  prize: string; // ETH amount as string
+  creator_address: string;
+  status: BountyStatus;
+  winner_address: string | null;
+  created_at: string;
+  tx_hash?: string; // Creation payment TX
+}
+
+export interface Submission {
+  id: string;
+  bounty_id: string;
+  hunter_address: string;
+  content: string;
+  contact: string;
+  created_at: string;
+  ai_score?: number;
+  ai_notes?: string;
+}
+
+// Database operations
+export const db = {
+  // BOUNTIES
+  bounties: {
+    async getAll(): Promise<Bounty[]> {
+      const { data, error } = await supabase
+        .from("bounties")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    },
+
+    async getById(id: string): Promise<Bounty | null> {
+      const { data, error } = await supabase
+        .from("bounties")
+        .select("*")
+        .eq("id", id)
+        .single();
+
+      if (error) return null;
+      return data;
+    },
+
+    async getByCreator(address: string): Promise<Bounty[]> {
+      const { data, error } = await supabase
+        .from("bounties")
+        .select("*")
+        .eq("creator_address", address.toLowerCase())
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    },
+
+    async getOpen(): Promise<Bounty[]> {
+      const { data, error } = await supabase
+        .from("bounties")
+        .select("*")
+        .eq("status", "OPEN")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    },
+  },
+
+  // SUBMISSIONS
+  submissions: {
+    async getByBounty(bountyId: string): Promise<Submission[]> {
+      const { data, error } = await supabase
+        .from("submissions")
+        .select("*")
+        .eq("bounty_id", bountyId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    },
+
+    async getByHunter(address: string): Promise<Submission[]> {
+      const { data, error } = await supabase
+        .from("submissions")
+        .select("*")
+        .eq("hunter_address", address.toLowerCase())
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    },
+  },
+};
