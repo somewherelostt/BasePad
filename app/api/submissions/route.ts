@@ -1,0 +1,153 @@
+import { NextRequest, NextResponse } from "next/server";
+import { supabaseAdmin } from "@/lib/supabase";
+import { triggerAsyncAIReview } from "@/lib/ai-review";
+import { notifyNewSubmission } from "@/lib/telegram";
+
+// POST: Create a new submission
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { bounty_id, hunter_address, content, contact } = body;
+
+    // Validate required fields
+    if (!bounty_id || !hunter_address || !content || !contact) {
+      return NextResponse.json(
+        {
+          message:
+            "Missing required fields: bounty_id, hunter_address, content, contact",
+        },
+        { status: 400 }
+      );
+    }
+
+    // Check if bounty exists and is open
+    const { data: bounty, error: bountyError } = await supabaseAdmin
+      .from("bounties")
+      .select("*")
+      .eq("id", bounty_id)
+      .single();
+
+    if (bountyError || !bounty) {
+      return NextResponse.json(
+        { message: "Bounty not found" },
+        { status: 404 }
+      );
+    }
+
+    if (bounty.status !== "OPEN") {
+      return NextResponse.json(
+        { message: "Bounty is not open for submissions" },
+        { status: 400 }
+      );
+    }
+
+    // Prevent creator from submitting to their own bounty
+    if (bounty.creator_address.toLowerCase() === hunter_address.toLowerCase()) {
+      return NextResponse.json(
+        { message: "You cannot submit to your own bounty" },
+        { status: 400 }
+      );
+    }
+
+    // Check for duplicate submission
+    const { data: existingSubmission } = await supabaseAdmin
+      .from("submissions")
+      .select("id")
+      .eq("bounty_id", bounty_id)
+      .eq("hunter_address", hunter_address.toLowerCase())
+      .single();
+
+    if (existingSubmission) {
+      return NextResponse.json(
+        { message: "You have already submitted to this bounty" },
+        { status: 400 }
+      );
+    }
+
+    // Create the submission
+    const { data, error } = await supabaseAdmin
+      .from("submissions")
+      .insert({
+        bounty_id,
+        hunter_address: hunter_address.toLowerCase(),
+        content,
+        contact,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Supabase insert error:", error);
+      return NextResponse.json(
+        { message: "Failed to create submission" },
+        { status: 500 }
+      );
+    }
+
+    // Trigger async AI review (non-blocking)
+    triggerAsyncAIReview(data.id, content, bounty.title, bounty.description);
+
+    // Send Telegram notification (non-blocking)
+    notifyNewSubmission(
+      bounty.title,
+      bounty_id,
+      hunter_address.toLowerCase(),
+      bounty.prize
+    ).catch(console.error);
+
+    return NextResponse.json(data, { status: 201 });
+  } catch (error) {
+    console.error("Create submission error:", error);
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+// GET: List submissions (by bounty or hunter)
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const bountyId = searchParams.get("bounty_id");
+    const hunter = searchParams.get("hunter");
+
+    if (!bountyId && !hunter) {
+      return NextResponse.json(
+        { message: "Provide bounty_id or hunter address" },
+        { status: 400 }
+      );
+    }
+
+    let query = supabaseAdmin
+      .from("submissions")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (bountyId) {
+      query = query.eq("bounty_id", bountyId);
+    }
+
+    if (hunter) {
+      query = query.eq("hunter_address", hunter.toLowerCase());
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error("Supabase query error:", error);
+      return NextResponse.json(
+        { message: "Failed to fetch submissions" },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error("Get submissions error:", error);
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
