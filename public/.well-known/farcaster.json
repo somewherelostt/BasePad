@@ -15,6 +15,7 @@
     "splashBackgroundColor": "#000000",
     "heroImageUrl": "https://basepad.maazx.dev/basepad-icon-512.png",
     "tagline": "The onchain bounty board for Base builders.",
+    "imageUrl": "https://basepad.maazx.dev/basepad-icon-1024.png",
     "screenshotUrls": ["https://basepad.maazx.dev/basepad-icon-1024.png"],
     "primaryCategory": "productivity",
     "tags": ["bounties", "onchain", "base", "x402"],
