@@ -9,6 +9,9 @@ export const metadata: Metadata = {
   title: "BASEPAD | ONCHAIN BOUNTIES",
   description: "Post bounties. Hunt rewards. Get paid onchain.",
   keywords: ["bounty", "web3", "base", "crypto", "onchain"],
+  other: {
+    "base:app_id": "69422f91d19763ca26ddc37d",
+  },
   icons: {
     icon: "/basepad-icon-32.png",
     shortcut: "/basepad-icon-64.png",
