@@ -5,7 +5,7 @@ import { Navbar } from "@/components/Navbar";
 import { BrutalButton } from "@/components/BrutalButton";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Bounty, db } from "@/lib/supabase";
+import { Bounty, db, PrizeTier } from "@/lib/supabase";
 import { motion } from "framer-motion";
 import { formatUSDC } from "@/lib/format";
 
@@ -183,7 +183,7 @@ export default function BountiesPage() {
                             {(() => {
                                 let displayPrize = bounty.prize;
                                 if ((!bounty.prize || bounty.prize === "MULTI") && bounty.prizes) {
-                                    const total = bounty.prizes.reduce((acc: number, p: any) => acc + (parseFloat(p.amount) || 0), 0);
+                                    const total = bounty.prizes.reduce((acc: number, p: PrizeTier) => acc + (parseFloat(p.amount) || 0), 0);
                                     displayPrize = total.toString();
                                 }
                                 return formatUSDC(displayPrize); 

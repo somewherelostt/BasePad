@@ -6,6 +6,7 @@ import Scene3DWrapper from "@/components/Scene3DWrapper";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { formatUSDC } from "@/lib/format";
+import { Bounty, PrizeTier } from "@/lib/supabase";
 
 interface BountyStats {
   totalBounties: number;
@@ -25,14 +26,14 @@ export default function Home() {
     const fetchStats = async () => {
       try {
         const response = await fetch("/api/bounties");
-        const bounties = await response.json();
+        const bounties: Bounty[] = await response.json();
 
         const totalBounties = bounties.length;
-        const totalPrize = bounties.reduce((sum: number, b: any) => {
+        const totalPrize = bounties.reduce((sum: number, b: Bounty) => {
           let bountyAmount = 0;
           if (b.prizes && Array.isArray(b.prizes) && b.prizes.length > 0) {
               // Sum up all prize tiers
-              bountyAmount = b.prizes.reduce((pSum: number, p: any) => pSum + (parseFloat(p.amount) || 0), 0);
+              bountyAmount = b.prizes.reduce((pSum: number, p: PrizeTier) => pSum + (parseFloat(p.amount) || 0), 0);
           } else if (b.prize && b.prize !== "MULTI") {
               bountyAmount = parseFloat(b.prize) || 0;
           }
