@@ -2,96 +2,75 @@
 
 **The Trustless Bounty Marketplace on Base.**
 
----
-
-## ⚡ The Problem
-
-Freelancing is broken. Centralized platforms charge 20% fees, hold your funds hostage, and arbitrate disputes behind closed doors. You do the work, they take the cut.
-
-**BasePad** changes the game. It is a **fully onchain bounty marketplace** where:
-- **Funds are locked upfront** (Pre-funded in USDC)
-- **Payments are instant** (Programmatic payouts on Base)
-- **Reputation is self-sovereign** (Based on onchain history)
-- **No middleman fees** (Only network gas + minimal protocol fee)
+BasePad is a decentralized platform where builders compete for bounties, and creators pay instantly using onchain protocols. We replace the "middleman trust" of Web2 freelancing with "cryptographic truth."
 
 ---
 
-## 🛠️ The Solution
+## ⚡ Core Features
 
-BasePad replaces trust with code. By leveraging the **x402 Protocol** (HTTP 402 Payment Required), we treat payments as first-class citizens of the web.
+### 🔐 Trustless x402 Payments
+BasePad uses the **x402 Protocol** (HTTP 402 Payment Required) to treat payments as native web primitives.
+*   **Pre-Funded Escrow**: When a creator posts a bounty, the full prize pool is locked onchain in USDC. No "I'll pay you later."
+*   **Instant Settlement**: Winners are paid programmatically in USDC on Base Sepolia. Payouts take seconds, not weeks.
+*   **Zero Fees**: We don't take a 20% cut. You pay verified network gas and a minimal protocol fee.
 
-1.  **Creators post bounties** with locked multi-tier prize pools (USDC).
-2.  **Hunters submit work** (Code, Design, Audits).
-3.  **AI reviews submissions** (Gemini 2.0 Flash) for an objective initial score.
-4.  **Winners get paid instantly** via on-chain settlement.
+### 🛡️ Protocol Hardening (Security)
+The platform is built to resist economic exploits and trust leaks.
+*   **Strict Funding Integrity**: The backend enforces a strict equality check (`AmountPaid === Sum(Prizes) + Fee`). Every cent is accounted for before a bounty goes live.
+*   **Submission Anchoring**: Every submission is hashed (`SHA-256`) and anchored to the current Base block number. This proves *exactly* what was submitted and *when*, preventing timestamp spoofing or retroactive edits.
+*   **Clawback Mechanism**: Creators can cancel and refund their own bounties if they are expired (> 30 days) or have zero interaction, protecting their funds from being stuck in dead bounties.
 
-### Key Features
+### 🏆 Multi-Prize Architecture
+Not just "winner takes all." BasePad supports complex prize structures.
+*   **Prize Tiers**: Creators can define multiple winners (e.g., 1st Place: $1000, 2nd: $500, 3rd: $200).
+*   **Flexibility**: Perfect for hackathons, design contests, or audit contests where multiple contributions add value.
 
-*   **🛡️ Protocol Hardening**:
-    *   **Strict Funding Integrity**: Validates `AmountPaid == Sum(Prizes) + Fee` cryptographically.
-    *   **Submission Anchoring**: All work is hashed (`SHA-256`) and anchored to Base block height to prevent tampering.
-    *   **Auditable AI**: Evaluation logic is logged to a public audit trail.
+### 👤 Onchain Reputation V2
+A meritocratic identity system that rewards skill, not just volume.
+*   **Weighted Reputation Score**: Your score isn't just points. It's calculated as `Total Earnings × Win Rate`. This penalizes spammers who submit low-quality work (low win rate) and rewards consistent high-performers.
+*   **Verified Badge**: Pro-hunters with a Reputation Score > 500 receive a protocol verification badge (✓), signaling reliability to creators.
+*   **Public Profiles**: All history—created bounties, wins, and losses—is public and onchain.
 
-*   **🏆 Multi-Prize Bounties**:
-    *   Define prizes for 1st, 2nd, 3rd place.
-    *   Automated multi-winner payouts in USDC.
-
-*   **👤 Onchain Identity & Reputation**:
-    *   **Verified Profiles**: High-reputation users (>500 Score) earn a protocol badge.
-    *   **Weighted Score**: `Reputation = Earnings × Win Rate`. Farmers get penalized; pros get recognized.
-
-*   **🎨 Neo-Brutalist Design**:
-    *   High-contrast, no-nonsense UI focused on clarity and action.
-    *   "Brutal" design system for max readability.
-
----
-
-## 🏗️ Tech Stack
-
-Built for speed, security, and transparency.
-
--   **Frontend:** Next.js 14, TypeScript, TailwindCSS, Framer Motion
--   **Auth/Wallet:** Privy (Embedded Wallets)
--   **Chain:** Base Sepolia
--   **Payments:** x402 Protocol + USDC
--   **Database:** Supabase (PostgreSQL with RLS)
--   **AI:** Gemini 2.0 Flash (Code Analysis)
+### 🤖 Auditable AI Evaluation
+We use **Gemini 2.0 Flash** to provide instant, objective feedback on submissions.
+*   **Code Analysis**: AI reviews code for security, efficiency, and cleanliness immediately upon submission.
+*   **Transparent Logs**: Unlike "black box" algorithms, every AI review, prompt, and reasoning score is logged to a public database table. You can audit exactly *why* the AI gave a certain score.
 
 ---
 
-## 🚀 How It Works
+## 🏗️ Technical Architecture
 
-### Creating a Bounty
-1.  Connect wallet via Privy.
-2.  Define **Prize Tiers** (e.g., 100 USDC, 50 USDC).
-3.  **x402 Gate**: Protocol requests `0.001 USDC` fee + Prize Pool total.
-4.  Approve USDC transfer.
-5.  Backend verifies transaction receipt on Base Sepolia.
-6.  Bounty goes live.
+BasePad is built on a modern "Local-First, Cloud-Last" stack:
 
-### Hunting & Earning
-1.  Browse active bounties.
-2.  Submit work (URL/Text). Content is **hashed & anchored**.
-3.  Gemini 2.0 analyzes submission (Security, Efficiency, Cleanliness).
-4.  Creator selects winners.
-5.  **Instant Payout**: Funds move from protocol escrow to your wallet.
+-   **Frontend**: Next.js 14 (App Router) with TypeScript.
+-   **Styling**: **Neo-Brutalism**. Hard shadows, thick borders, high-contrast colors (Neon Green/Pink). Designed for maximum clarity.
+-   **Auth**: **Privy** for seamless embedded wallets. Login with Email/Socials, get a wallet instantly.
+-   **Database**: **Supabase** (PostgreSQL) with Row Level Security (RLS).
+-   **Chain**: **Base Sepolia** testnet.
 
 ---
 
-## 📦 Setup
+## 🚀 Getting Started
 
-1.  **Clone & Install**
-    ```bash
-    npm install
-    ```
+### Installation
+```bash
+# 1. Clone the repo
+git clone https://github.com/yourusername/basepad.git
 
-2.  **Environment Variables**
-    Copy `.env.example` to `.env.local` and add keys for Privy, Supabase, and Gemini.
+# 2. Install dependencies
+npm install
 
-3.  **Run Dev Server**
-    ```bash
-    npm run dev
-    ```
+# 3. Setup Environment
+# Copy .env.example to .env.local and fill in your keys (Privy, Supabase, Gemini)
+```
+
+### Running Locally
+```bash
+npm run dev
+# Open http://localhost:3000
+```
 
 ---
-**BasePad**. Code is Law. Work is Value.
+
+## 📜 License
+MIT Open Source. Built for the **Base** ecosystem.
