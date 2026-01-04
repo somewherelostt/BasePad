@@ -97,7 +97,7 @@ export default function PublicProfilePage() {
                              <div className="space-y-4">
                                  {profile?.bio ? (
                                      <p className="font-mono text-sm border-l-4 border-brutal-green pl-4 py-2 bg-gray-50">
-                                         "{profile.bio}"
+                                         &quot;{profile.bio}&quot;
                                      </p>
                                  ) : (
                                      <p className="text-sm text-gray-400 font-mono italic">No bio data available.</p>

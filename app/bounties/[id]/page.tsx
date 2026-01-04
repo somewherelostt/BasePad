@@ -6,11 +6,9 @@ import { BrutalCard } from "@/components/BrutalCard";
 import { BrutalButton } from "@/components/BrutalButton";
 import { WalletGate } from "@/components/WalletGate";
 import { SocialShare } from "@/components/SocialShare";
-import { BrutalReceipt } from "@/components/BrutalReceipt";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Bounty, Submission, db } from "@/lib/supabase";
-import { getExplorerAddressUrl } from "@/lib/base";
 
 import { useBrutalNotification } from "@/components/ui/BrutalNotification";
 import { UserDisplay } from "@/components/UserDisplay";
@@ -153,10 +151,7 @@ export default function BountyDetailPage() {
     }
   };
 
-  const truncateAddress = (addr: string) => {
-    if (!addr) return "";
-    return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
-  };
+
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {

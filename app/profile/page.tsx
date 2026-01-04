@@ -8,7 +8,6 @@ import { WalletGate } from "@/components/WalletGate";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Bounty, Submission, Profile, db } from "@/lib/supabase";
-import { UserDisplay } from "@/components/UserDisplay";
 import { useBrutalNotification } from "@/components/ui/BrutalNotification";
 
 export default function ProfilePage() {
@@ -23,7 +22,7 @@ export default function ProfilePage() {
   
   // Editing State
   const [isEditing, setIsEditing] = useState(false);
-  const [saving, setSaving] = useState(false);
+  // const [saving, setSaving] = useState(false); // Removing unused state
   const [editForm, setEditForm] = useState({
     username: "",
     bio: "",
@@ -73,7 +72,6 @@ export default function ProfilePage() {
 
   const handleSaveProfile = async () => {
       if (!address) return;
-      setSaving(true);
       
       try {
           const { error } = await db.profiles.upsert({
@@ -89,8 +87,6 @@ export default function ProfilePage() {
       } catch (err) {
           console.error(err);
           notify.error("Failed to update profile");
-      } finally {
-          setSaving(false);
       }
   };
 
@@ -198,7 +194,7 @@ export default function ProfilePage() {
                                  <div className="space-y-4 relative z-10">
                                      {profile?.bio && (
                                          <p className="font-mono text-sm border-l-4 border-brutal-green pl-4 py-2 bg-gray-50">
-                                             "{profile.bio}"
+                                             &quot;{profile.bio}&quot;
                                          </p>
                                      )}
                                      <div className="flex gap-4">

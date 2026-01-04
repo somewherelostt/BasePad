@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
-import { createWalletClient, http, parseEther } from "viem";
+import { createWalletClient, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { baseSepolia } from "@/lib/base";
 
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     // Determine payload amount and logic based on Multi-Prize vs Legacy
     let amountToPay = "0";
     let isMultiPrize = false;
-    let prizeRank = rank || 1;
+    const prizeRank = rank || 1;
 
     if (bounty.prizes && Array.isArray(bounty.prizes) && bounty.prizes.length > 0) {
         // Multi-Prize Logic
@@ -59,14 +59,14 @@ export async function POST(request: NextRequest) {
              return NextResponse.json({ message: "Rank is required for multi-prize bounties" }, { status: 400 });
         }
 
-        const prizeTier = bounty.prizes.find((p: any) => p.rank === rank);
+        const prizeTier = bounty.prizes.find((p: { rank: number; amount: string }) => p.rank === rank);
         if (!prizeTier) {
             return NextResponse.json({ message: "Invalid prize rank" }, { status: 400 });
         }
 
         // Check if this rank is already awarded
         const winners = bounty.winners || [];
-        if (winners.some((w: any) => w.rank === rank)) {
+        if (winners.some((w: { rank: number }) => w.rank === rank)) {
             return NextResponse.json({ message: "This prize rank has already been awarded" }, { status: 400 });
         }
 
@@ -162,7 +162,7 @@ export async function POST(request: NextRequest) {
           const updatedWinners = [...currentWinners, newWinner];
 
           // Check if all prizes are awarded
-          const allAwarded = bounty.prizes.every((p: any) => updatedWinners.some((w: any) => w.rank === p.rank));
+          const allAwarded = bounty.prizes.every((p: { rank: number }) => updatedWinners.some((w: { rank: number }) => w.rank === p.rank));
           const newStatus = allAwarded ? "PAID" : "OPEN";
 
           await supabaseAdmin

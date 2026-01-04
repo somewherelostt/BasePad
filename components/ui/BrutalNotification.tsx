@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
+import React, { createContext, useContext, useState, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
 type NotificationType = "success" | "error" | "info";

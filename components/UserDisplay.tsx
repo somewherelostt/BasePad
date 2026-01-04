@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { db, Profile } from "@/lib/supabase";
-import { getExplorerAddressUrl } from "@/lib/base";
 import Link from "next/link";
 
 interface UserDisplayProps {
@@ -19,7 +18,6 @@ export function UserDisplay({
   prefix = ""
 }: UserDisplayProps) {
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let mounted = true;
@@ -33,10 +31,6 @@ export function UserDisplay({
         }
       } catch (error) {
         console.error("Error fetching profile:", error);
-      } finally {
-        if (mounted) {
-          setLoading(false);
-        }
       }
     }
 
