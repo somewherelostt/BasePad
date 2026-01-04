@@ -226,6 +226,7 @@ export async function analyzeSubmission(
  */
 export async function triggerAsyncAIReview(
   submissionId: string,
+  bountyId: string,
   submissionContent: string,
   bountyTitle: string,
   bountyDescription: string
@@ -250,6 +251,20 @@ export async function triggerAsyncAIReview(
           ai_notes: result.feedback.join("\n• "),
         })
         .eq("id", submissionId);
+      
+      // LOG AUDIT TRAIL (Transparency)
+      await supabaseAdmin
+        .from("ai_reviews")
+        .insert({
+            submission_id: submissionId,
+            bounty_id: bountyId,
+            model_name: result.provider || "unknown",
+            score: result.score,
+            reasoning: result.feedback.join("\n"), 
+            // We could store full raw response if analyzeSubmission returned it, 
+            // but for now we verify what we have.
+            //Ideally analyzeSubmission should return raw text too.
+        });
 
       console.log(
         `AI Review completed for submission ${submissionId} using ${result.provider}:`,

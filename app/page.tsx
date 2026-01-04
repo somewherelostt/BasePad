@@ -5,7 +5,7 @@ import { BrutalButton } from "@/components/BrutalButton";
 import Scene3DWrapper from "@/components/Scene3DWrapper";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { formatEth } from "@/lib/format";
+import { formatUSDC } from "@/lib/format";
 
 interface BountyStats {
   totalBounties: number;
@@ -66,10 +66,10 @@ export default function Home() {
     },
   ];
 
-  const marqueeItems = ["BASE", "x402", "ONCHAIN", "BUILDERS", "ETH", "BOUNTIES"];
+  const marqueeItems = ["BASE", "x402", "ONCHAIN", "BUILDERS", "USDC", "BOUNTIES"];
 
   return (
-    <main className="min-h-screen bg-brutal-white">
+    <main className="min-h-screen">
       {/* 3D BACKGROUND SCENE */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <Scene3DWrapper />
@@ -88,7 +88,7 @@ export default function Home() {
             🤖 GEMINI 2.0 REVIEW
           </div>
           <div className="px-3 py-1 border-2 border-brutal-white bg-black/60 text-brutal-white text-xs font-black uppercase backdrop-blur-sm">
-            🏗️ BUILDONCHAIN
+            🏗️ BOUNTY$$
           </div>
         </div>
 
@@ -99,7 +99,7 @@ export default function Home() {
             <div className="border-4 border-brutal-black bg-brutal-yellow/90 p-4 md:p-6 mb-4 backdrop-blur-sm" style={{ boxShadow: "3px 3px 0px 0px #000000" }}>
               <p className="text-xs font-bold uppercase mb-2">TOTAL PRIZE POOL</p>
               <p className="text-2xl md:text-4xl font-black truncate">
-                {loading ? "..." : formatEth(stats.totalPrize)}
+                {loading ? "..." : formatUSDC(stats.totalPrize)}
               </p>
             </div>
             <div className="border-4 border-brutal-black bg-brutal-pink/90 p-4 md:p-6 backdrop-blur-sm" style={{ boxShadow: "3px 3px 0px 0px #000000" }}>
@@ -219,7 +219,7 @@ export default function Home() {
                 
                 {/* Description */}
                 <p className="font-semibold text-sm md:text-base text-brutal-black leading-relaxed break-words">
-                  Pay 0.001 ETH to post your bounty. Describe the work. Set the prize.
+                  Pay 0.001 USDC to post your bounty. Describe the work. Set the prize.
                 </p>
               </div>
               
@@ -299,7 +299,7 @@ export default function Home() {
                 
                 {/* Description */}
                 <p className="font-semibold text-sm md:text-base text-brutal-black leading-relaxed break-words">
-                  Creator picks winner. Platform executes payout. ETH hits your wallet.
+                  Creator picks winner. Platform executes payout. USDC hits your wallet.
                 </p>
               </div>
             </motion.div>
@@ -372,7 +372,7 @@ export default function Home() {
           {/* BOTTOM DIVIDER */}
           <div className="border-t-2 border-brutal-green pt-4">
             <p className="text-xs font-bold text-brutal-green uppercase text-center">
-              BUILT FOR <span className="text-brutal-white">BUILDONCHAIN</span> • x402 POWERED
+              BUILT FOR <span className="text-brutal-white">Bounty Hunter</span> • x402 POWERED
             </p>
           </div>
         </div>

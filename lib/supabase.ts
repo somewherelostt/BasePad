@@ -62,6 +62,20 @@ export interface Bounty {
   winner_address: string | null;
   created_at: string;
   tx_hash?: string; // Creation payment TX
+  prizes: PrizeTier[]; // Array of prize tiers
+  winners: Winner[]; // Array of selected winners
+}
+
+export interface PrizeTier {
+  rank: number; // 1, 2, 3...
+  amount: string; // Amount in USDC/ETH
+}
+
+export interface Winner {
+  rank: number;
+  submission_id: string;
+  hunter_address: string;
+  amount: string;
 }
 
 export interface Submission {
@@ -73,10 +87,43 @@ export interface Submission {
   created_at: string;
   ai_score?: number;
   ai_notes?: string;
+  is_public?: boolean;
+  prize_won?: number;
+  rank?: number;
+  content_hash?: string;
+  block_number?: number;
+}
+
+// Profile Interface
+export interface Profile {
+  wallet_address: string;
+  username?: string;
+  bio?: string;
+  twitter?: string;
+  discord?: string;
+  created_at: string;
 }
 
 // Database operations
 export const db = {
+  // PROFILES
+  profiles: {
+    async get(address: string): Promise<Profile | null> {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("wallet_address", address.toLowerCase())
+        .single();
+      
+      if (error && error.code !== 'PGRST116') return null; // PGRST116 is "Row not found"
+      return data;
+    },
+    
+    async upsert(profile: Partial<Profile>) {
+        return await supabase.from("profiles").upsert(profile);
+    }
+  },
+
   // BOUNTIES
   bounties: {
     async getAll(): Promise<Bounty[]> {

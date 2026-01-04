@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import html2canvas from "html2canvas";
 import { BrutalButton } from "./BrutalButton";
+import { useBrutalNotification } from "./ui/BrutalNotification";
 
 interface BrutalReceiptProps {
   bountyTitle: string;
@@ -28,6 +29,7 @@ export function BrutalReceipt({
 }: BrutalReceiptProps) {
   const receiptRef = useRef<HTMLDivElement>(null);
   const [downloading, setDownloading] = useState(false);
+  const { notify } = useBrutalNotification();
 
   const truncateHash = (hash: string) => {
     return `${hash.slice(0, 10)}...${hash.slice(-8)}`;
@@ -68,9 +70,10 @@ export function BrutalReceipt({
       link.download = `receipt-${bountyId}.png`;
       link.href = canvas.toDataURL("image/png");
       link.click();
+      notify.success("Receipt downloaded successfully!");
     } catch (error) {
       console.error("Failed to download receipt:", error);
-      alert("Failed to download receipt. Please try again.");
+      notify.error("Failed to download receipt. Please try again.");
     } finally {
       setDownloading(false);
     }

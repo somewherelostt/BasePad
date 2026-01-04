@@ -1,11 +1,11 @@
 /**
- * Format ETH values to a readable format
- * e.g., "0.001000000 ETH" -> "0.001 ETH"
+ * Format USDC values to a readable format
+ * e.g., "1000.50" -> "1,000.50 USDC"
  */
-export function formatEth(value: string | number): string {
+export function formatUSDC(value: string | number): string {
   const numValue = typeof value === "string" ? parseFloat(value) : value;
   
-  if (isNaN(numValue)) return "0 ETH";
+  if (isNaN(numValue)) return "0 USDC";
   
   // Remove trailing zeros and unnecessary decimals
   const formatted = numValue.toLocaleString("en-US", {
@@ -13,7 +13,7 @@ export function formatEth(value: string | number): string {
     maximumFractionDigits: 6,
   });
   
-  return `${formatted} ETH`;
+  return `${formatted} USDC`;
 }
 
 /**

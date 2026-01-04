@@ -46,7 +46,7 @@ export default function BountiesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-brutal-white">
+    <div className="min-h-screen">
       <Navbar
         address={address}
         isConnected={authenticated}
@@ -181,7 +181,7 @@ export default function BountiesPage() {
                           <p className="text-2xl md:text-3xl font-black text-brutal-green max-w-full overflow-hidden text-ellipsis whitespace-nowrap">
                             {bounty.prize}
                           </p>
-                          <p className="text-xs font-bold uppercase">ETH</p>
+                          <p className="text-xs font-bold uppercase">USDC</p>
                         </div>
                       </div>
                     </div>

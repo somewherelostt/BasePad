@@ -12,7 +12,7 @@ const PLATFORM_PRIVATE_KEY = process.env
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { bounty_id, submission_id, winner_address, creator_address } = body;
+    const { bounty_id, submission_id, winner_address, creator_address, rank } = body;
 
     // Validate required fields
     if (!bounty_id || !submission_id || !winner_address || !creator_address) {
@@ -46,12 +46,37 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check bounty is still open
-    if (bounty.status !== "OPEN") {
-      return NextResponse.json(
-        { message: "Bounty has already been paid out" },
-        { status: 400 }
-      );
+    // Determine payload amount and logic based on Multi-Prize vs Legacy
+    let amountToPay = "0";
+    let isMultiPrize = false;
+    let prizeRank = rank || 1;
+
+    if (bounty.prizes && Array.isArray(bounty.prizes) && bounty.prizes.length > 0) {
+        // Multi-Prize Logic
+        isMultiPrize = true;
+        
+        if (!rank) {
+             return NextResponse.json({ message: "Rank is required for multi-prize bounties" }, { status: 400 });
+        }
+
+        const prizeTier = bounty.prizes.find((p: any) => p.rank === rank);
+        if (!prizeTier) {
+            return NextResponse.json({ message: "Invalid prize rank" }, { status: 400 });
+        }
+
+        // Check if this rank is already awarded
+        const winners = bounty.winners || [];
+        if (winners.some((w: any) => w.rank === rank)) {
+            return NextResponse.json({ message: "This prize rank has already been awarded" }, { status: 400 });
+        }
+
+        amountToPay = prizeTier.amount;
+    } else {
+        // Legacy Logic
+        if (bounty.status !== "OPEN") {
+             return NextResponse.json({ message: "Bounty has already been paid out" }, { status: 400 });
+        }
+        amountToPay = bounty.prize;
     }
 
     // Verify submission exists and belongs to this bounty
@@ -79,7 +104,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Execute payout from custodial wallet
+    // Execute payout from custodial wallet (USDC)
     if (!PLATFORM_PRIVATE_KEY) {
       console.error("Platform wallet private key not configured");
       return NextResponse.json(
@@ -96,38 +121,117 @@ export async function POST(request: NextRequest) {
         transport: http(),
       });
 
-      // Send the prize to the winner
-      const txHash = await walletClient.sendTransaction({
-        to: winner_address as `0x${string}`,
-        value: parseEther(bounty.prize),
+      // USDC Implementation
+      const usdcAddress = "0x036cbd53842c5426634e7929541ec2318f3dcf7e";
+      const usdcAbi = [
+          {
+            constant: false,
+            inputs: [
+              { name: "_to", type: "address" },
+              { name: "_value", type: "uint256" },
+            ],
+            name: "transfer",
+            outputs: [{ name: "", type: "bool" }],
+            type: "function",
+          },
+      ] as const;
+
+       // Parse amount (assume 6 decimals for USDC)
+      const amountUnits = BigInt(Math.round(parseFloat(amountToPay) * 1_000_000));
+
+      console.log(`Sending ${amountUnits} USDC to ${winner_address}`);
+
+      const hash = await walletClient.writeContract({
+        address: usdcAddress,
+        abi: usdcAbi,
+        functionName: 'transfer',
+        args: [winner_address, amountUnits],
       });
 
-      // Update bounty status
-      const { error: updateError } = await supabaseAdmin
-        .from("bounties")
-        .update({
-          status: "PAID",
-          winner_address: winner_address.toLowerCase(),
-        })
-        .eq("id", bounty_id);
+      console.log("Payout TX:", hash);
 
-      if (updateError) {
-        console.error("Failed to update bounty status:", updateError);
-        // Note: TX was sent, so we log but don't fail
+      // Update Database
+      if (isMultiPrize) {
+          const currentWinners = bounty.winners || [];
+          const newWinner = {
+              rank: prizeRank,
+              submission_id: submission_id,
+              hunter_address: winner_address,
+              amount: amountToPay
+          };
+          const updatedWinners = [...currentWinners, newWinner];
+
+          // Check if all prizes are awarded
+          const allAwarded = bounty.prizes.every((p: any) => updatedWinners.some((w: any) => w.rank === p.rank));
+          const newStatus = allAwarded ? "PAID" : "OPEN";
+
+          await supabaseAdmin
+            .from("bounties")
+            .update({
+                winners: updatedWinners,
+                status: newStatus,
+                // If it's the last one, maybe set winner_address to the first one or leave it?
+                // Legacy field winner_address might be used for display. Let's set it to the primary winner (rank 1) if available.
+                winner_address: prizeRank === 1 ? winner_address : bounty.winner_address
+            })
+            .eq("id", bounty_id);
+
+      } else {
+          // Legacy Update
+          await supabaseAdmin
+            .from("bounties")
+            .update({
+              status: "PAID",
+              winner_address: winner_address.toLowerCase(),
+            })
+            .eq("id", bounty_id);
+      }
+
+      // Update Submission Transparency
+      await supabaseAdmin.from("submissions")
+        .update({
+            is_public: true, // Winner is always public? Or all submissions become public? Prompt says "After bounty resolution, all submissions are made public". 
+            // We should probably trigger a batch update if the bounty is fully resolved.
+            // For now, let's mark the winner as public and having won.
+            prize_won: parseFloat(amountToPay),
+            rank: prizeRank
+        })
+        .eq("id", submission_id);
+
+
+      // If bounty is fully resolved, mark ALL submissions as public
+      // We can check the `newStatus` from above logic, but for simplicity, let's just do it if isLegacy or if allAwarded logic passed.
+      // Re-evaluating:
+      // If legacy -> fully resolved.
+      // If multi -> need to check if all prizes awarded.
+      
+      let fullyResolved = !isMultiPrize;
+      if (isMultiPrize) {
+          const winners = (bounty.winners || []).concat([{ rank: prizeRank }]); // simplistic check
+          if (winners.length >= bounty.prizes.length) {
+              fullyResolved = true;
+          }
+      }
+
+      if (fullyResolved) {
+          await supabaseAdmin
+            .from("submissions")
+            .update({ is_public: true })
+            .eq("bounty_id", bounty_id);
       }
 
       return NextResponse.json({
         success: true,
-        txHash,
+        txHash: hash,
         winner: winner_address,
-        prize: bounty.prize,
+        prize: amountToPay,
       });
     } catch (txError) {
       console.error("Transaction failed:", txError);
       return NextResponse.json(
         {
           message:
-            "Payout transaction failed. Platform wallet may have insufficient funds.",
+            "Payout transaction failed. Platform wallet may have insufficient funds or gas.",
           error: txError instanceof Error ? txError.message : "Unknown error",
         },
         { status: 500 }

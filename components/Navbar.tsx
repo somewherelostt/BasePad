@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BrutalButton } from "./BrutalButton";
+import { UserDisplay } from "./UserDisplay";
 import { motion } from "framer-motion";
 
 interface NavbarProps {
@@ -27,10 +28,6 @@ export function Navbar({
   ];
 
   const isActive = (href: string) => pathname === href;
-
-  const truncateAddress = (addr: string) => {
-    return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
-  };
 
   return (
     <nav className="border-b-4 border-brutal-black bg-brutal-white sticky top-0 z-50 h-16">
@@ -68,7 +65,7 @@ export function Navbar({
             {isConnected && address ? (
               <div className="flex items-center gap-2">
                 <span className="hidden sm:block px-2 py-1 bg-brutal-black text-brutal-green font-mono font-bold text-xs border-2 border-brutal-black">
-                  {truncateAddress(address)}
+                  <UserDisplay address={address} showLink={false} />
                 </span>
                 <motion.button
                   onClick={onDisconnect}

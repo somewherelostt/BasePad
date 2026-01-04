@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
+import { BrutalNotificationProvider } from "@/components/ui/BrutalNotification";
 
 // Force dynamic rendering for all pages (Privy needs client-side)
 export const dynamic = "force-dynamic";
@@ -34,8 +35,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="bg-brutal-white text-brutal-black min-h-screen">
-        <Providers>{children}</Providers>
+      <body className="brutal-mesh-bg text-brutal-black min-h-screen">
+        <div className="brutal-grain" />
+        <Providers>
+            <BrutalNotificationProvider>
+                {children}
+            </BrutalNotificationProvider>
+        </Providers>
       </body>
     </html>
   );

@@ -12,7 +12,13 @@ import { baseSepolia } from "@/lib/base";
 type CreateStep = "FORM" | "PAYMENT" | "CONFIRMING" | "SUCCESS" | "ERROR";
 
 // x402 uses USDC, displayed in dollars
+const CREATION_FEE_USDC = 0.001;
 const CREATION_FEE_DISPLAY = "$0.001 USDC";
+
+interface PrizeTier {
+  rank: number;
+  amount: string;
+}
 
 export default function CreatePage() {
   const router = useRouter();
@@ -25,7 +31,7 @@ export default function CreatePage() {
   // Form state
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [prize, setPrize] = useState("");
+  const [prizes, setPrizes] = useState<PrizeTier[]>([{ rank: 1, amount: "" }]);
 
   // Transaction state
   const [bountyId, setBountyId] = useState<string>("");
@@ -35,6 +41,13 @@ export default function CreatePage() {
     (w: { walletClientType?: string }) => w.walletClientType === "privy"
   );
   const address = embeddedWallet?.address || wallets[0]?.address;
+
+  // Calculate total required payment
+  const totalPrizeAmount = prizes.reduce(
+    (acc, curr) => acc + (parseFloat(curr.amount) || 0),
+    0
+  );
+  const totalRequiredPayment = totalPrizeAmount + CREATION_FEE_USDC;
 
   // Ensure wallet is ready and connected
   useEffect(() => {
@@ -53,9 +66,28 @@ export default function CreatePage() {
     prepareWallet();
   }, [wallets, walletsReady, authenticated, embeddedWallet]);
 
+  const addPrizeTier = () => {
+    setPrizes([...prizes, { rank: prizes.length + 1, amount: "" }]);
+  };
+
+  const removePrizeTier = (index: number) => {
+    if (prizes.length === 1) return;
+    const newPrizes = prizes.filter((_, i) => i !== index);
+    // Recalculate ranks
+    const reordered = newPrizes.map((p, i) => ({ ...p, rank: i + 1 }));
+    setPrizes(reordered);
+  };
+
+  const updatePrizeAmount = (index: number, amount: string) => {
+    const newPrizes = [...prizes];
+    newPrizes[index].amount = amount;
+    setPrizes(newPrizes);
+  };
+
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!address || !title || !description || !prize) return;
+    if (!address || !title || !description || prizes.some((p) => !p.amount))
+      return;
 
     setStep("PAYMENT");
     setError("");
@@ -70,7 +102,7 @@ export default function CreatePage() {
         body: JSON.stringify({
           title,
           description,
-          prize,
+          prizes,
           creator_address: address,
         }),
       });
@@ -123,7 +155,7 @@ export default function CreatePage() {
           signer
         );
 
-        // Send USDC payment (1000 = $0.001 USDC with 6 decimals)
+        // Send USDC payment
         console.log(
           `Sending ${requirement.maxAmountRequired} USDC to ${requirement.payTo}`
         );
@@ -150,7 +182,7 @@ export default function CreatePage() {
           body: JSON.stringify({
             title,
             description,
-            prize,
+            prizes,
             creator_address: address,
           }),
         });
@@ -184,13 +216,13 @@ export default function CreatePage() {
     setStep("FORM");
     setTitle("");
     setDescription("");
-    setPrize("");
+    setPrizes([{ rank: 1, amount: "" }]);
     setBountyId("");
     setError("");
   };
 
   return (
-    <div className="min-h-screen bg-brutal-white">
+    <div className="min-h-screen">
       <Navbar
         address={address}
         isConnected={authenticated}
@@ -216,13 +248,17 @@ export default function CreatePage() {
                 <BrutalCard variant="yellow" padding="md">
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">💰</span>
-                    <div>
-                      <p className="font-black uppercase">
-                        CREATION FEE: {CREATION_FEE_DISPLAY}
-                      </p>
-                      <p className="text-sm font-bold text-gray-700">
-                        PAID VIA x402 PROTOCOL ON BASE SEPOLIA
-                      </p>
+                    <div className="w-full">
+                      <div className="flex justify-between items-center mb-1">
+                        <p className="font-black uppercase">TOTAL TO PAY:</p>
+                        <p className="font-black text-xl">
+                          ${totalRequiredPayment.toFixed(3)} USDC
+                        </p>
+                      </div>
+                      <div className="text-xs font-bold text-gray-700 flex justify-between border-t border-black pt-1">
+                        <span>PRIZES: ${totalPrizeAmount.toFixed(3)}</span>
+                        <span>FEE: {CREATION_FEE_DISPLAY}</span>
+                      </div>
                     </div>
                   </div>
                 </BrutalCard>
@@ -232,20 +268,12 @@ export default function CreatePage() {
                     <span className="text-xl">ℹ️</span>
                     <div className="text-sm">
                       <p className="font-bold uppercase mb-1">
-                        x402 PAYMENT INFO
+                        PRE-FUNDING REQUIRED
                       </p>
                       <p className="text-gray-600">
-                        x402 uses USDC stablecoin payments. You need USDC on
-                        Base Sepolia testnet. Get testnet USDC from the{" "}
-                        <a
-                          href="https://faucet.circle.com/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="underline text-brutal-green hover:text-black"
-                        >
-                          Circle Faucet
-                        </a>
-                        .
+                        You must deposit the full prize amount + fee upfront.
+                        Funds are held in the platform escrow until you select
+                        winners.
                       </p>
                     </div>
                   </div>
@@ -262,6 +290,7 @@ export default function CreatePage() {
                     placeholder="E.G. BUILD A LANDING PAGE"
                     required
                     maxLength={100}
+                    className="w-full p-3 bg-white border-4 border-black font-bold focus:outline-none focus:ring-4 focus:ring-brutal-green transition-all"
                   />
                 </div>
 
@@ -272,10 +301,11 @@ export default function CreatePage() {
                   <textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Build a Discord bot... Design a logo... Fix a smart contract..."
+                    placeholder="Describe the task, requirements, and deliverables..."
                     rows={6}
                     required
                     maxLength={2000}
+                    className="w-full p-3 bg-white border-4 border-black font-bold focus:outline-none focus:ring-4 focus:ring-brutal-green transition-all"
                   />
                   <p className="text-xs font-bold text-gray-500 mt-1">
                     {description.length}/2000 CHARACTERS
@@ -284,21 +314,44 @@ export default function CreatePage() {
 
                 <div>
                   <label className="block font-black uppercase text-sm mb-2">
-                    PRIZE (ETH) *
+                    PRIZE TIERS (USDC) *
                   </label>
-                  <input
-                    type="text"
-                    value={prize}
-                    onChange={(e) => {
-                      const val = e.target.value.replace(/[^0-9.]/g, "");
-                      setPrize(val);
-                    }}
-                    placeholder="0.1"
-                    required
-                  />
-                  <p className="text-xs font-bold text-gray-500 mt-1">
-                    THIS IS WHAT THE WINNER WILL RECEIVE
-                  </p>
+                  <div className="space-y-3">
+                    {prizes.map((prize, index) => (
+                      <div key={index} className="flex gap-2 items-center">
+                        <div className="bg-black text-white font-black px-3 py-2 w-12 text-center">
+                          #{prize.rank}
+                        </div>
+                        <input
+                          type="text"
+                          value={prize.amount}
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/[^0-9.]/g, "");
+                            updatePrizeAmount(index, val);
+                          }}
+                          placeholder="Amount (e.g. 100)"
+                          required
+                          className="flex-1 p-2 bg-white border-4 border-black font-bold focus:outline-none focus:ring-4 focus:ring-brutal-green"
+                        />
+                        {prizes.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removePrizeTier(index)}
+                            className="bg-brutal-pink px-3 py-2 border-4 border-black font-bold hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all"
+                          >
+                            X
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={addPrizeTier}
+                    className="mt-3 text-sm font-black uppercase underline hover:text-brutal-green"
+                  >
+                    + ADD ANOTHER PRIZE TIER
+                  </button>
                 </div>
 
                 <BrutalButton
@@ -306,9 +359,14 @@ export default function CreatePage() {
                   variant="primary"
                   size="lg"
                   fullWidth
-                  disabled={!title || !description || !prize}
+                  disabled={
+                    !title ||
+                    !description ||
+                    prizes.some((p) => !p.amount) ||
+                    totalRequiredPayment <= 0
+                  }
                 >
-                  PAY {CREATION_FEE_DISPLAY} & CREATE BOUNTY
+                  PAY ${totalRequiredPayment.toFixed(3)} USDC & CREATE
                 </BrutalButton>
               </form>
             )}
@@ -327,7 +385,7 @@ export default function CreatePage() {
                       PROCESSING PAYMENT
                     </h2>
                     <p className="font-bold text-gray-600 uppercase">
-                      x402 IS HANDLING YOUR USDC PAYMENT
+                      PLEASE APPROVE THE TRANSACTIONS
                     </p>
                   </div>
                 </div>
@@ -360,7 +418,7 @@ export default function CreatePage() {
                     BOUNTY CREATED!
                   </h2>
                   <p className="font-bold text-gray-700 uppercase mb-6">
-                    YOUR BOUNTY IS NOW LIVE AND READY FOR HUNTERS
+                    FUNDS SECURED. BOUNTY IS LIVE.
                   </p>
                   <div className="space-y-3">
                     <BrutalButton

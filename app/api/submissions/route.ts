@@ -64,6 +64,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // --- INTEGRITY: ANCHORING ---
+    // 1. Calculate Content Hash (SHA-256) to prevent unnoticed edits
+    const { createHash } = await import("crypto");
+    const hashInput = JSON.stringify({ content, contact }); // Anchor both content and contact
+    const content_hash = createHash("sha256").update(hashInput).digest("hex");
+
+    // 2. Fetch Current Block Number (Base Sepolia) for timestamp ordering
+    let block_number = 0;
+    try {
+        const { JsonRpcProvider } = await import("ethers");
+        const provider = new JsonRpcProvider("https://sepolia.base.org");
+        block_number = await provider.getBlockNumber();
+    } catch (err) {
+        console.warn("Failed to fetch block number for anchoring:", err);
+        // We continue without block number rather than failing the submission, 
+        // but robust system would retry or fail. For now, 0 or null.
+    }
+
     // Create the submission
     const { data, error } = await supabaseAdmin
       .from("submissions")
@@ -72,6 +90,8 @@ export async function POST(request: NextRequest) {
         hunter_address: hunter_address.toLowerCase(),
         content,
         contact,
+        content_hash, 
+        block_number,
       })
       .select()
       .single();
@@ -85,7 +105,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Trigger async AI review (non-blocking)
-    triggerAsyncAIReview(data.id, content, bounty.title, bounty.description);
+    triggerAsyncAIReview(data.id, bounty_id, content, bounty.title, bounty.description);
 
     // Send Telegram notification (non-blocking)
     notifyNewSubmission(
