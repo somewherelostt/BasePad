@@ -1,0 +1,62 @@
+# HACKATHON PITCH: BASEPAD - THE TRUSTLESS BOUNTY MARKETPLACE
+# Duration: ~3-4 Minutes (approx. 500-600 words)
+
+[INTRO - THE PROBLEM (0:00 - 0:45)]
+
+"Hello everyone. We are Team BasePad, and we're here to solve the biggest problem in the freelance economy: TRUST.
+
+Imagine you're a developer. You see a bounty for a job. You do the work, you submit it... and then? Silence. The client ghosts you. Or maybe they pay you, but it takes 30 days and PayPal takes a 5% cut.
+On the flip side, imagine you're a founder. You hire someone, pay them upfront, and they deliver broken code or disappear.
+
+The current marketplace model is broken because it relies on middlemen to enforce trust. We believed we could build something better.
+Introducing **BasePad**: The first fully trustless, onchain bounty marketplace built on Base."
+
+[THE SOLUTION & INNOVATION (0:45 - 1:15)]
+(Innovation: 20 Points)
+
+"BasePad isn't just a job board. It's a protocol. We took the concept of a marketplace and replaced the 'Terms of Service' with 'Cryptographic Truth'.
+
+We use the **x402 Protocol**—inspired by the HTTP 402 'Payment Required' standard.
+When a bounty is created, funds aren’t promised; they are **locked**. 100% of the prize pool is escrowed onchain in USDC before the job posts.
+When a winner is selected, the payout is programmatic and instant. No invoices, no net-30 terms, no 'check is in the mail'."
+
+[WALKTHROUGH / DEMO NARRATIVE (1:15 - 2:45)]
+(Usability: 20 Points | Completion: 20 Points)
+
+"Let’s walk through the app.
+
+**1. The Creator Experience**
+First, our design. We went with a bold, **Neo-Brutalist aesthetic**. High contrast, hard lines. It tells you immediately: this is a tool for builders, not a corporate suite.
+A creator connects their wallet via **Privy**—seamless email or social login for non-crypto natives.
+They create a bounty: 'Fix this bug'. They set a prize tier: $500 for 1st place, $100 for 2nd.
+Hit 'Post'. The app enforces a **Strict Funding Integrity Check**. The transaction won't submit unless the funds match the prize exactly. The moment it confirms, the bounty is live and fully funded.
+
+**2. The Hunter Experience**
+A developer finds the job. They submit their PR.
+Here’s our next innovation: **Submission Anchoring**.
+We hash their submission content and timestamp it on the Base blockchain. This creates an immutable proof of work. No one can claim 'I submitted that idea first!' because the chain proves who did.
+
+**3. AI-Assisted Review**
+Now, reviewing code is hard. So we integrated **Gemini 2.0 Flash**.
+Every submission is instantly analyzed by AI. It generates a score and a security audit.
+Crucially, we built **Auditable AI**. We don't just show the score; we log the prompt, the reasoning, and the raw output to a public database. It’s not a black box; it’s a glass box.
+
+**4. Payout & Reputation**
+The creator picks the winner. One click. The smart contract releases the USDC instantly.
+But we don't stop there. We built **Reputation V2**.
+Most sites give you points for volume. We give you points for **Quality**. Your Reputation Score is calculated as `Total Earnings * Win Rate`. This prevents spamming. If you continually submit bad work, your score drops. A high score earns you a verified protocol badge."
+
+[TECHNICAL STACK (2:45 - 3:15)]
+(Code: 20 Points)
+
+"Under the hood, this is a 'Local-First, Cloud-Last' hybrid.
+*   **Frontend**: Next.js 14 with TypeScript.
+*   **Database**: Supabase with heavy Row Level Security.
+*   **Chain**: Base Sepolia for fast, cheap transactions.
+*   **Safety**: We built a 'Clawback' mechanism. If a bounty sits for 30 days with no activity, the creator can essentially 'rage quit' and retrieve their funds, ensuring money never gets stuck."
+
+[CONCLUSION (3:15 - 3:30)]
+
+"BasePad is functional, secure, and live. We built a marketplace that enables users to view bounties, compare submissions via AI, order code, and track the 'delivery' of value with cryptographic certainty.
+We moved from 'Don't be evil' to 'Can't be evil'.
+Thank you."

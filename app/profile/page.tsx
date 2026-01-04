@@ -74,14 +74,23 @@ export default function ProfilePage() {
       if (!address) return;
       
       try {
-          const { error } = await db.profiles.upsert({
-              wallet_address: address,
-              ...editForm
+          // Use API route to bypass RLS policies since we aren't using Supabase Auth
+          const response = await fetch("/api/profile", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                  wallet_address: address,
+                  ...editForm
+              })
           });
-          
-          if (error) throw error;
+
+          if (!response.ok) {
+              const errorData = await response.json();
+              throw new Error(errorData.message || "Failed to update");
+          }
           
           setIsEditing(false);
+          // Optimistic update or reload? We can just use the form data
           setProfile({ ...profile, ...editForm, wallet_address: address, created_at: profile?.created_at || new Date().toISOString() });
           notify.success("Identity updated successfully!");
       } catch (err) {
