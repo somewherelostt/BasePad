@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Bounty, db } from "@/lib/supabase";
 import { motion } from "framer-motion";
+import { formatUSDC } from "@/lib/format";
 
 export default function BountiesPage() {
   const { login, logout, authenticated } = usePrivy();
@@ -179,7 +180,14 @@ export default function BountiesPage() {
                             PRIZE
                           </p>
                           <p className="text-2xl md:text-3xl font-black text-brutal-green max-w-full overflow-hidden text-ellipsis whitespace-nowrap">
-                            {bounty.prize}
+                            {(() => {
+                                let displayPrize = bounty.prize;
+                                if ((!bounty.prize || bounty.prize === "MULTI") && bounty.prizes) {
+                                    const total = bounty.prizes.reduce((acc: number, p: any) => acc + (parseFloat(p.amount) || 0), 0);
+                                    displayPrize = total.toString();
+                                }
+                                return formatUSDC(displayPrize); 
+                            })().replace(" USDC", "")}
                           </p>
                           <p className="text-xs font-bold uppercase">USDC</p>
                         </div>

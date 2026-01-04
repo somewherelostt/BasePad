@@ -6,11 +6,16 @@ export function formatUSDC(value: string | number): string {
   const numValue = typeof value === "string" ? parseFloat(value) : value;
   
   if (isNaN(numValue)) return "0 USDC";
+
+  // Handle very small numbers (between 0 and 0.01)
+  if (numValue > 0 && numValue < 0.01) {
+    return "< 0.01 USDC";
+  }
   
   // Remove trailing zeros and unnecessary decimals
   const formatted = numValue.toLocaleString("en-US", {
     minimumFractionDigits: 0,
-    maximumFractionDigits: 6,
+    maximumFractionDigits: 2, // Standard currency display
   });
   
   return `${formatted} USDC`;
