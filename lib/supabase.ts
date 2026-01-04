@@ -113,9 +113,9 @@ export const db = {
         .from("profiles")
         .select("*")
         .eq("wallet_address", address.toLowerCase())
-        .single();
+        .maybeSingle();
       
-      if (error && error.code !== 'PGRST116') return null; // PGRST116 is "Row not found"
+      if (error) return null;
       return data;
     },
     
